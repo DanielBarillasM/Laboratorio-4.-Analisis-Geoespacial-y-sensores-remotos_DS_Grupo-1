@@ -203,6 +203,24 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Laboratory data and generated artefacts
+data/raw/**
+data/processed/**
+data/jobs/**
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/jobs/.gitkeep
+reports/*.aux
+reports/*.log
+reports/*.out
+reports/*.toc
+reports/*.synctex.gz
+
+# Authentication material must never be versioned
+.openeo-auth/**
+*credentials*
+*secrets*
+
 # Ruff stuff:
 .ruff_cache/
 
