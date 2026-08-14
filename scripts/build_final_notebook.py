@@ -54,6 +54,7 @@ display(HTML("""
   <h1>Los lagos vistos desde Sentinel‑2</h1>
   <p><strong>Laboratorio 4 · Análisis geoespacial y sensores remotos</strong></p>
   <p>Proxy de cianobacterias, NDVI y NDWI en Atitlán y Amatitlán · Grupo 1</p>
+  <p>Jorge Gabriel Palacios Sales · 231385 &nbsp;|&nbsp; Pablo Daniel Barillas Moreno · 22193 &nbsp;|&nbsp; Roberto Emiliano Otoniel · 23968</p>
 </div>
 
 <span class="exercise">E1 · API</span><span class="exercise">E2 · rásteres mínimos</span>
@@ -108,19 +109,25 @@ for lake, filename in {"Atitlán":"Lago_Atitlan.geojson", "Amatitlán":"Lago_Ama
                    "área_caja_km²":gdf.to_crs(32615).area.iloc[0]/1e6})
 display(pd.DataFrame(course).style.hide(axis="index").format({"área_caja_km²":"{:.1f}"}))
 display(HTML("<div class='callout'><strong>Lectura:</strong> los archivos del curso son extensiones de consulta, no polígonos de costa. Por eso no se usan como denominador del porcentaje del lago.</div>"))
+display(HTML("<div class='callout warning'><strong>Cobertura del 07‑02‑2026:</strong> la guía anticipa aproximadamente 57.1 % para Amatitlán; el mosaico openEO procesado alcanza 89.08 % sobre el contorno acuático después de SCL y NDWI ≥ 0. La diferencia responde a denominadores y composiciones de teselas que no son necesariamente equivalentes; se conserva la cifra observada en el producto analizado.</div>"))
 '''),
     md(r'''
 <div class="section"><h2>4 · Evolución temporal</h2><p>Intensidad, cola alta y extensión por fecha.</p></div>
 
-La rampa visual publicada por Se2WaQ termina en 100, pero el modelo genera valores mayores. Para no ocultar diferencias se usan la **mediana cruda** y el **percentil 90** en escala logarítmica. El corte `CYA ≥ 40` es exploratorio y no sanitario.
+La **media aritmética de CYA** se calcula por lago y fecha y aparece en la primera gráfica, como solicita el ejercicio 4.1. La rampa visual publicada por Se2WaQ termina en 100, pero el modelo genera valores mayores; por eso la media se acompaña de la **mediana cruda** y el **percentil 90** en escala logarítmica. El corte `CYA ≥ 40` es exploratorio y no sanitario.
 '''),
     code(r'''
 peaks = []
 for lake, group in cya.groupby("lago"):
     row = group.loc[group["mediana"].idxmax()]
-    peaks.append({"lago":lake, "fecha_pico":row.fecha, "mediana_CYA":row.mediana,
-                  "p90":row.p90, "área_CYA40_pct":row.porcentaje_area_alto})
-display(pd.DataFrame(peaks).style.hide(axis="index").format({"mediana_CYA":"{:.2f}","p90":"{:.2f}","área_CYA40_pct":"{:.2f}%"}))
+    mean_row = group.loc[group["media"].idxmax()]
+    peaks.append({"lago":lake, "fecha_pico_media":mean_row.fecha,
+                  "media_CYA_max":mean_row.media, "fecha_pico_mediana":row.fecha,
+                  "mediana_CYA_max":row.mediana, "p90":row.p90,
+                  "área_CYA40_pct":row.porcentaje_area_alto})
+display(pd.DataFrame(peaks).style.hide(axis="index").format({
+    "media_CYA_max":"{:.2f}", "mediana_CYA_max":"{:.2f}", "p90":"{:.2f}",
+    "área_CYA40_pct":"{:.2f}%"}))
 display(HTML("<img class='full-img' src='../outputs/figures/serie_temporal_cya.png'><p class='caption'>Figura 1. Las líneas unen únicamente fechas muestreadas; no representan observaciones continuas.</p>"))
 '''),
     md(r'''

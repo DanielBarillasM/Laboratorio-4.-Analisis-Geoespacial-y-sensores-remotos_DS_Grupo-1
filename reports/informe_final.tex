@@ -36,7 +36,11 @@
 \title{\vspace{-1.4cm}\color{azulprofundo}\textbf{Monitoreo satelital de señales asociadas con cianobacterias}\\[0.3em]
 \Large Lagos Atitlán y Amatitlán, Guatemala\\[0.45em]
 \large Laboratorio 4 --- Análisis geoespacial y sensores remotos}
-\author{Grupo 1\\CC3084 --- Data Science}
+\author{Grupo 1\\[0.35em]
+Jorge Gabriel Palacios Sales --- 231385\\
+Pablo Daniel Barillas Moreno --- 22193\\
+Roberto Emiliano Otoniel --- 23968\\[0.35em]
+CC3084 --- Data Science}
 \date{Agosto de 2026}
 
 \begin{document}
@@ -85,11 +89,13 @@ Se solicitaron únicamente B02 (azul), B03 (verde), B04 (rojo), B08 (infrarrojo 
 
 La fórmula \CYA{} coincide con Se2WaQ \cite{se2waq,potes2018}. El script define el fondo mediante NDWI y presenta \CYA{} cuando $\mathrm{NDWI}\geq0$; este criterio se reprodujo. Se excluyeron SCL 0, 1, 3, 8, 9, 10 y 11, además de reflectancias no positivas. Los píxeles excluidos permanecieron como datos faltantes y nunca se reemplazaron por cero.
 
-La escala gráfica Se2WaQ termina en 100, pero la fórmula no. Por eso el análisis principal usa mediana y percentiles crudos. La media limitada a 0--100 se conserva solo como diagnóstico de saturación. Se definió \CYA{} $\geq40$ como señal alta porque 40 es un corte publicado en la rampa Se2WaQ; no es un límite sanitario. También se repitió el cálculo con 20 y 60.
+La escala gráfica Se2WaQ termina en 100, pero la fórmula no. Para cumplir con el análisis temporal se calculó la media aritmética cruda de \CYA{} por lago y fecha. Como los valores extremos pueden elevarla, se presenta junto con la mediana y percentiles crudos. La media limitada a 0--100 se conserva solo como diagnóstico de saturación. Se definió \CYA{} $\geq40$ como señal alta porque 40 es un corte publicado en la rampa Se2WaQ; no es un límite sanitario. También se repitió el cálculo con 20 y 60.
 
 \section{Control de calidad}
 
 Las 22 observaciones contienen NDVI, NDWI y \CYA{} con rejillas compatibles. Tres fechas tuvieron menos de 80\% de cobertura válida: Amatitlán 28-04-2026 (77.68\%), Atitlán 18-01-2025 (43.21\%) y Atitlán 12-02-2026 (77.08\%). Además, Atitlán 17-07-2025 presenta una discontinuidad rectangular occidental compatible con un límite de tesela. La fecha se conserva para trazabilidad, pero ese parche no se interpreta como patrón natural ni se usa para seleccionar mapas representativos.
+
+La guía anticipa aproximadamente 57.1\% de cobertura válida para Amatitlán el 07-02-2026. Nuestro producto openEO alcanza 89.08\% sobre el contorno fino del espejo de agua después de aplicar SCL y $\mathrm{NDWI}\geq0$. Las cifras no usan necesariamente el mismo denominador ni la misma composición de teselas: la guía describe la cobertura de la imagen de referencia, mientras este flujo mide los píxeles válidos del mosaico exportado dentro del polígono acuático. Por ello se reporta el 89.08\% observado en el producto analizado y se conserva explícitamente la cifra de la guía para trazabilidad.
 
 \alerta{Las líneas temporales conectan fechas separadas e irregulares. No implican que el valor haya cambiado de manera lineal entre adquisiciones.}
 
@@ -98,15 +104,15 @@ Las 22 observaciones contienen NDVI, NDWI y \CYA{} con rejillas compatibles. Tre
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{serie_temporal_cya.pdf}
-\caption{Mediana, percentil 90 y porcentaje del área total del lago con \CYA{} $\geq40$. La escala logarítmica permite comparar lagos con órdenes de magnitud distintos.}
+\caption{Media aritmética y mediana por lago y fecha, percentil 90 y porcentaje del área total del lago con \CYA{} $\geq40$. La escala logarítmica permite comparar lagos con órdenes de magnitud distintos.}
 \label{fig:temporal}
 \end{figure}
 
-Amatitlán alternó dos regímenes visibles (Figura~\ref{fig:temporal}). Enero de 2025, noviembre de 2025 y enero--febrero de 2026 mostraron extensiones bajas. En abril de 2025 y desde el 29 de marzo hasta el 19 de junio de 2026 la señal fue generalizada. La máxima mediana ocurrió el 13-04-2026, con 262.24; el percentil 90 fue 433.04 y 97.50\% del lago superó 40.
+Amatitlán alternó dos regímenes visibles (Figura~\ref{fig:temporal}). Enero de 2025, noviembre de 2025 y enero--febrero de 2026 mostraron extensiones bajas. En abril de 2025 y desde el 29 de marzo hasta el 19 de junio de 2026 la señal fue generalizada. La máxima media aritmética y la máxima mediana ocurrieron el 13-04-2026, con 275.03 y 262.24, respectivamente; el percentil 90 fue 433.04 y 97.50\% del lago superó 40.
 
 Seis fechas se clasificaron como críticas por cubrir al menos 10\% del lago: 15-04-2025, 28-04-2025, 29-03-2026, 13-04-2026, 28-04-2026 y 19-06-2026. El criterio identifica extensión, no toxicidad.
 
-Atitlán permaneció varios órdenes de magnitud por debajo. Su máxima mediana fue 2.57 el 13-04-2026 y su percentil 90 llegó a 17.43. El mayor porcentaje calculado, 3.14\% el 17-07-2025, está afectado por el artefacto mencionado. Ninguna fecha alcanzó el criterio crítico de 10\%.
+Atitlán permaneció varios órdenes de magnitud por debajo. Su máxima media aritmética fue 15.32 el 17-07-2025, impulsada por valores extremos asociados con el artefacto de esa escena; la máxima mediana robusta fue 2.57 el 13-04-2026 y su percentil 90 llegó a 17.43. El mayor porcentaje calculado, 3.14\% el 17-07-2025, también está afectado por el artefacto mencionado. Ninguna fecha alcanzó el criterio crítico de 10\%.
 
 \section{Análisis espacial}
 

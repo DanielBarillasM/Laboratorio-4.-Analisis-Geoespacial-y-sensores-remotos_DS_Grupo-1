@@ -342,19 +342,30 @@ def spatial_zone_tables(
 # --------------------------------------------------------------------------- #
 
 def plot_temporal(cya: pd.DataFrame) -> None:
-    """Serie temporal sobre estadísticos robustos y extensión sobre el lago."""
+    """Serie temporal de media, estadísticos robustos y extensión sobre el lago."""
 
     datos = cya.assign(fecha=pd.to_datetime(cya["fecha"]))
     fig, axes = plt.subplots(3, 1, figsize=(11, 11), sharex=True, constrained_layout=True)
     for lago, grupo in datos.groupby("lago"):
         grupo = grupo.sort_values("fecha")
-        estilo = {"marker": "o", "linewidth": 2.2, "color": COLORS[lago], "label": LABELS[lago]}
-        axes[0].plot(grupo["fecha"], grupo["mediana"], **estilo)
-        axes[1].plot(grupo["fecha"], grupo["p90"], **estilo)
-        axes[2].plot(grupo["fecha"], grupo["porcentaje_area_alto"], **estilo)
+        estilo = {"marker": "o", "linewidth": 2.2, "color": COLORS[lago]}
+        axes[0].plot(
+            grupo["fecha"], grupo["media"],
+            **estilo, label=f"{LABELS[lago]} · media aritmética",
+        )
+        axes[0].plot(
+            grupo["fecha"], grupo["mediana"],
+            color=COLORS[lago], marker="s", linewidth=1.6, linestyle="--",
+            alpha=.82, label=f"{LABELS[lago]} · mediana",
+        )
+        axes[1].plot(grupo["fecha"], grupo["p90"], **estilo, label=LABELS[lago])
+        axes[2].plot(
+            grupo["fecha"], grupo["porcentaje_area_alto"],
+            **estilo, label=LABELS[lago],
+        )
 
-    axes[0].set(ylabel=f"Mediana · {CYA_UNIT}", yscale="log")
-    axes[0].set_title("Evolución del proxy de cianobacteria (valor crudo, escala logarítmica)")
+    axes[0].set(ylabel=f"Media y mediana · {CYA_UNIT}", yscale="log")
+    axes[0].set_title("Promedio aritmético de CYA por lago y fecha, con mediana robusta")
     axes[1].set(ylabel=f"Percentil 90 · {CYA_UNIT}", yscale="log")
     axes[1].set_title("Cola alta de la distribución")
     axes[2].set(ylabel="Área del lago con CYA ≥ 40 (%)", xlabel="Fecha de adquisición")
