@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Análisis temporal y espacial de cianobacterias en Atitlán y Amatitlán."
 requires-python = ">=3.10"
 dependencies = [
+  "folium>=0.17",
   "geopandas>=1.0",
   "jupyterlab>=4.2",
   "matplotlib>=3.8",

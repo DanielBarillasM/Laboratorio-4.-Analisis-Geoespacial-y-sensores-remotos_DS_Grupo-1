@@ -1,7 +1,16 @@
-"""Audita los 22 GeoTIFF y genera tablas y figuras del avance temporal."""
+"""Reproduce las tablas y figuras del informe de avance (ejercicios 1--4).
+
+Se conserva para poder regenerar exactamente lo que se entregó el 13 de agosto.
+Sus resúmenes de CYA usan la media truncada a la escala 0--100, que satura en
+varias fechas de Amatitlán; el análisis definitivo vive en ``analyze_full.py``.
+
+Escribe sobre los mismos archivos que el pipeline final, así que exige ``--force``
+para no revertir sin querer las tablas buenas.
+"""
 
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 from pathlib import Path
@@ -86,7 +95,7 @@ def plot_temporal(cya: pd.DataFrame) -> None:
     for lake, group in cya.groupby("lago"):
         group = group.sort_values("fecha")
         axes[0].plot(
-            group["fecha"], group["media"], marker="o", linewidth=2.2,
+            group["fecha"], group["media_truncada_0_100"], marker="o", linewidth=2.2,
             color=COLORS[lake], label=LABELS[lake],
         )
         axes[1].plot(
@@ -132,6 +141,18 @@ def plot_selected_maps(paths: list[Path]) -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--force", action="store_true",
+        help="Confirma que se quiere volver a las tablas del avance, con la media truncada.",
+    )
+    if not parser.parse_args().force:
+        raise SystemExit(
+            "Este script regenera las tablas del avance y sobrescribiría las del análisis "
+            "final. Use `python scripts/analyze_full.py` para el análisis completo, "
+            "o repita con --force si de verdad quiere reproducir el avance."
+        )
+
     ensure_output_directories()
     paths = sorted(RAW_DIR.glob("*/*.tif"))
     if len(paths) != 22:
@@ -153,7 +174,10 @@ def main() -> None:
     plot_temporal(cya)
     plot_selected_maps(paths)
 
-    peaks = cya.loc[cya.groupby("lago")["media"].idxmax(), ["lago", "fecha", "media", "porcentaje_alto"]]
+    peaks = cya.loc[
+        cya.groupby("lago")["media_truncada_0_100"].idxmax(),
+        ["lago", "fecha", "media_truncada_0_100", "porcentaje_alto"],
+    ]
     print(f"GeoTIFF auditados: {len(paths)}")
     print("Cobertura estimada por polígono (%):")
     print(audit.groupby("lago")["cobertura_poligono_pct"].agg(["min", "median", "max"]).round(2))

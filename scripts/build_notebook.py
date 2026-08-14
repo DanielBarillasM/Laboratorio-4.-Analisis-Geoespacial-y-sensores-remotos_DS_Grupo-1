@@ -55,7 +55,7 @@ cells = [
 
 Este avance cubre las bases de los ejercicios 1–4: conexión con Copernicus, definición de las áreas y fechas oficiales, selección mínima de bandas, construcción de índices y preparación del análisis temporal. No se interpretan resultados inexistentes: las conclusiones se completarán únicamente después de validar las descargas.
 
-<div class="callout warning"><strong>Contornos provisionales.</strong> Se usan polígonos de OpenStreetMap para eliminar superficies ajenas a los lagos y una máscara dinámica que conserva píxeles sin nube con NDWI ≥ 0. Cuando el curso entregue sus GeoJSON oficiales, deberán sustituir estos contornos.</div>
+<div class="callout"><strong>Delimitación de los lagos.</strong> La guía permite usar «las coordenadas o el geojson provisto». La consulta a Copernicus se limita con las cajas envolventes publicadas en la guía y el recorte fino del espejo de agua se hace con los contornos de OpenStreetMap (relaciones 5781818 y 11018382, licencia ODbL), una fuente pública y reproducible. Sobre ese recorte se aplica una máscara dinámica que conserva píxeles sin nube con NDWI ≥ 0.</div>
 """),
     code(r"""
 from pathlib import Path
@@ -112,7 +112,7 @@ for ax, (key, area) in zip(axes, AREAS.items()):
                edgecolor=PALETTE[key], linewidth=2.2)
     ax.set(xlabel="Longitud", ylabel="Latitud", title=area.name)
     ax.set_aspect("equal", adjustable="box")
-fig.suptitle("Contornos provisionales utilizados para el recorte", y=1.02, fontweight="bold")
+fig.suptitle("Contornos de OpenStreetMap utilizados para el recorte", y=1.02, fontweight="bold")
 plt.tight_layout()
 plt.show()
 """),
@@ -210,7 +210,7 @@ if not stats.empty:
     md(r"""
 <div class="lab-section"><h2>8. Próximos análisis</h2><p>Ruta para completar la rúbrica sin rehacer la base.</p></div>
 
-1. Sustituir los contornos de OpenStreetMap por los polígonos oficiales del curso.
+1. Reemplazar la media truncada a 0–100 por estadísticos robustos sobre el valor crudo, porque en varias fechas de Amatitlán la mediana ya está saturada en 100.
 2. Revisar visualmente todas las máscaras y profundizar en las fechas de cobertura parcial.
 3. Analizar correlaciones de Pearson y Spearman entre CYA, NDVI y NDWI.
 4. Elaborar mapas de persistencia, histogramas, boxplots y comparaciones estacionales.

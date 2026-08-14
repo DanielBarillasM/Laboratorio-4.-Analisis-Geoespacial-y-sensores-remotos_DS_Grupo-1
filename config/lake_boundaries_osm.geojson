@@ -11,7 +11,7 @@
         "fuente": "OpenStreetMap contributors via Nominatim",
         "licencia": "ODbL 1.0",
         "osm_relation_id": 11018382,
-        "uso": "contorno_provisional_hasta_recibir_geojson_oficial"
+        "uso": "recorte_del_espejo_de_agua_y_calculo_de_area"
       },
       "geometry": {
         "type": "Polygon",
@@ -5739,7 +5739,7 @@
         "fuente": "OpenStreetMap contributors via Nominatim",
         "licencia": "ODbL 1.0",
         "osm_relation_id": 5781818,
-        "uso": "contorno_provisional_hasta_recibir_geojson_oficial"
+        "uso": "recorte_del_espejo_de_agua_y_calculo_de_area"
       },
       "geometry": {
         "type": "Polygon",

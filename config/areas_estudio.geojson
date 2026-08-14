@@ -8,8 +8,9 @@
       "properties": {
         "id": "atitlan",
         "nombre": "Lago de Atitlán",
-        "tipo": "caja_envolvente_provisional",
-        "advertencia": "Reemplazar por el contorno oficial del lago cuando se reciba el GeoJSON provisto por el curso."
+        "tipo": "caja_envolvente_de_la_guia",
+        "fuente": "Coordenadas publicadas en la guia del Laboratorio 4, seccion Coordenadas",
+        "uso": "extension_de_consulta_a_Copernicus"
       },
       "geometry": {
         "type": "Polygon",
@@ -21,8 +22,9 @@
       "properties": {
         "id": "amatitlan",
         "nombre": "Lago de Amatitlán",
-        "tipo": "caja_envolvente_provisional",
-        "advertencia": "Reemplazar por el contorno oficial del lago cuando se reciba el GeoJSON provisto por el curso."
+        "tipo": "caja_envolvente_de_la_guia",
+        "fuente": "Coordenadas publicadas en la guia del Laboratorio 4, seccion Coordenadas",
+        "uso": "extension_de_consulta_a_Copernicus"
       },
       "geometry": {
         "type": "Polygon",

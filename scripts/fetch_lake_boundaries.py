@@ -1,4 +1,10 @@
-"""Obtiene contornos provisionales de los lagos desde OpenStreetMap/Nominatim."""
+"""Obtiene los contornos del espejo de agua desde OpenStreetMap/Nominatim.
+
+La guía del laboratorio permite delimitar cada lago con las coordenadas provistas o
+con un GeoJSON. Aquí se usan las cajas envolventes de la guía para consultar
+Copernicus y estos contornos de OpenStreetMap para recortar el espejo de agua y
+calcular áreas, de modo que el recorte sea reproducible por cualquier integrante.
+"""
 
 from __future__ import annotations
 
@@ -39,7 +45,7 @@ for feature in payload["features"]:
                 "fuente": "OpenStreetMap contributors via Nominatim",
                 "licencia": "ODbL 1.0",
                 "osm_relation_id": relation,
-                "uso": "contorno_provisional_hasta_recibir_geojson_oficial",
+                "uso": "recorte_del_espejo_de_agua_y_calculo_de_area",
             },
             "geometry": feature["geometry"],
         }
