@@ -5,14 +5,15 @@ Base reproducible para estudiar la presencia potencial de cianobacterias en los 
 ## Estado
 
 - Las 22 fechas oficiales están registradas y validadas en `config/observaciones.csv`.
-- Las dos cajas envolventes publicadas en la guía están en `config/areas_estudio.geojson` y los contornos del espejo de agua, tomados de OpenStreetMap, en `config/lake_boundaries_osm.geojson`.
+- Los GeoJSON entregados por el curso están en `config/Lago_Atitlan.geojson` y `config/Lago_Amatitlan.geojson`; contienen las mismas cajas envolventes publicadas como coordenadas en la guía.
+- Los contornos finos del espejo de agua, tomados de OpenStreetMap, están en `config/lake_boundaries_osm.geojson` y se usan únicamente para el recorte y el cálculo de área.
 - El flujo openEO genera NDVI, NDWI y el proxy CYA de Se2WaQ a 20 m.
-- Se aplican máscaras SCL de calidad/nubes y una máscara de agua provisional `NDWI >= 0`.
+- Se aplican máscaras SCL de calidad/nubes y la separación agua-fondo `NDWI >= 0` del script Se2WaQ.
 - Los 22 GeoTIFF oficiales fueron descargados y auditados: 11 por lago.
 - Hay pruebas automáticas para fechas, contornos, fórmulas, estadísticos robustos, porcentajes de área, persistencia, correlaciones y manejo de NoData.
 - Ningún archivo del repositorio contiene credenciales; la autenticación es por código de dispositivo.
 
-> **Delimitación de los lagos.** El ejercicio 2 de la guía permite trabajar «usando las coordenadas o el geojson provisto». Aquí se usan ambas cosas de forma complementaria: las cajas envolventes de la guía acotan la consulta a Copernicus y los contornos de OpenStreetMap (relaciones [5781818](https://www.openstreetmap.org/relation/5781818) y [11018382](https://www.openstreetmap.org/relation/11018382), licencia ODbL 1.0) recortan el espejo de agua y sirven para calcular áreas. Se eligió OpenStreetMap por ser una fuente pública, citable y reproducible con `scripts/fetch_lake_boundaries.py`.
+> **Delimitación de los lagos.** El ejercicio 2 permite usar las coordenadas o el GeoJSON provisto. Los archivos entregados por el curso reproducen exactamente las cajas rectangulares de esas coordenadas: se usan como extensión oficial de consulta. Como no delinean la orilla, los contornos de OpenStreetMap (relaciones [5781818](https://www.openstreetmap.org/relation/5781818) y [11018382](https://www.openstreetmap.org/relation/11018382), licencia ODbL 1.0) realizan el recorte fino del espejo de agua y el cálculo de superficies.
 
 ## Estructura
 
@@ -89,6 +90,7 @@ Fuentes metodológicas:
 | Archivo en `outputs/tables/` | Contenido |
 | --- | --- |
 | `control_calidad_rasters.csv` | Rejilla, cobertura válida y rango de cada índice por fecha |
+| `revision_visual_rasters.csv` | Auditoría visual, cobertura y advertencias por escena |
 | `estadisticas_indices.csv` | Media, mediana y percentiles de NDVI, NDWI y CYA |
 | `serie_temporal_cya.csv` | Solo CYA: base del análisis temporal |
 | `sensibilidad_umbral_cya.csv` | Extensión de la floración con umbrales 20, 40 y 60 |
@@ -97,13 +99,16 @@ Fuentes metodológicas:
 | `comparacion_lagos.csv` | Comparación del ejercicio 7, incluidas las fechas críticas |
 | `distribucion_estacional.csv` | Reparto entre época seca y lluviosa |
 | `persistencia_resumen.csv` | Superficie que supera el umbral en 25 %, 50 % y 75 % de las fechas |
+| `zonas_espaciales_fecha.csv` | Intensidad de CYA por cuadrante, lago y fecha |
+| `zonas_espaciales_resumen.csv` | Síntesis de zonas recurrentes por lago |
 
 ### Figuras
 
 `serie_temporal_cya`, `mapas_cya_seleccion`, `mapas_cya_logaritmico`,
 `mapas_diferencia_cya`, `persistencia_cya`, `distribuciones_cya`,
 `dispersion_correlaciones` y `comparacion_lagos`, cada una en PNG y PDF, más los
-mapas interactivos `mapa_interactivo_atitlan.html` y `mapa_interactivo_amatitlan.html`.
+atlas de las 11 fechas de cada lago (`atlas_cya_*`) y los mapas interactivos
+`mapa_interactivo_atitlan.html` y `mapa_interactivo_amatitlan.html`.
 
 ## Decisiones y limitaciones
 
@@ -121,10 +126,12 @@ Conviene leerlas antes de citar cualquier cifra.
 - **La extensión se mide sobre el área del lago**, no sobre los píxeles válidos:
   la cobertura varía entre fechas y referirse solo a lo observado sobreestima la
   floración en las imágenes nubladas.
-- **La máscara de agua `NDWI >= 0` elimina la nata superficial más densa**, que
-  ópticamente se comporta como vegetación. Esto subestima la extensión e induce
-  parte de la correlación negativa entre CYA y NDWI, lo que debe declararse al
-  interpretar el ejercicio 6.
+- **La máscara de agua `NDWI >= 0` reproduce el criterio del script Se2WaQ.**
+  Puede excluir superficies ópticamente semejantes a vegetación, incluidas natas
+  muy densas; por ello las correlaciones y extensiones se interpretan como las
+  observadas bajo el criterio del modelo, no como cobertura biológica absoluta.
+- **La persistencia exige al menos seis fechas válidas por píxel.** Esto evita
+  llamar persistente a una zona observada solamente una o dos veces.
 - **Los píxeles vecinos no son independientes.** Las correlaciones se reportan
   también sobre una submuestra espacial, y los valores de p deben leerse con
   cautela porque el tamaño de muestra es enorme por construcción.
@@ -134,11 +141,15 @@ Conviene leerlas antes de citar cualquier cifra.
 ## Informe
 
 ```powershell
-pdflatex -interaction=nonstopmode -halt-on-error -output-directory=reports reports/informe_avance.tex
-pdflatex -interaction=nonstopmode -halt-on-error -output-directory=reports reports/informe_avance.tex
+python scripts/build_final_notebook.py
+jupyter nbconvert --to notebook --execute --inplace notebooks/02_laboratorio_completo.ipynb
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=reports reports/informe_final.tex
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=reports reports/informe_final.tex
 ```
 
-El informe está escrito para lectores ambientales y separa claramente metodología, resultados pendientes y limitaciones.
+El notebook ejecutado reúne los ejercicios 1 a 8 y el informe final está escrito
+para lectores ambientales. Ambos separan resultados, interpretación y
+limitaciones del proxy satelital.
 
 ## Resultados
 

@@ -215,6 +215,10 @@ reports/*.log
 reports/*.out
 reports/*.toc
 reports/*.synctex.gz
+reports/~$*
+
+# Local assistant/session state is not part of the laboratory deliverable
+.memsearch/
 
 # Authentication material must never be versioned
 .openeo-auth/**

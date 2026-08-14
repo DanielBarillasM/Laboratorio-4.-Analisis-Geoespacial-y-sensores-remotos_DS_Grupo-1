@@ -1,6 +1,6 @@
 {
   "type": "FeatureCollection",
-  "name": "areas_estudio_provisionales",
+  "name": "areas_estudio_guia",
   "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}},
   "features": [
     {
@@ -9,7 +9,7 @@
         "id": "atitlan",
         "nombre": "Lago de Atitlán",
         "tipo": "caja_envolvente_de_la_guia",
-        "fuente": "Coordenadas publicadas en la guia del Laboratorio 4, seccion Coordenadas",
+        "fuente": "Coordenadas y GeoJSON proporcionados en el Laboratorio 4",
         "uso": "extension_de_consulta_a_Copernicus"
       },
       "geometry": {
@@ -23,7 +23,7 @@
         "id": "amatitlan",
         "nombre": "Lago de Amatitlán",
         "tipo": "caja_envolvente_de_la_guia",
-        "fuente": "Coordenadas publicadas en la guia del Laboratorio 4, seccion Coordenadas",
+        "fuente": "Coordenadas y GeoJSON proporcionados en el Laboratorio 4",
         "uso": "extension_de_consulta_a_Copernicus"
       },
       "geometry": {

@@ -1,7 +1,7 @@
 import numpy as np
 
 from lab4.analysis import cyano_se2waq, describe_values, ndvi, ndwi
-from lab4.config import load_lake_geometry, load_observations
+from lab4.config import AREAS, load_course_geometry, load_lake_geometry, load_observations
 
 
 def test_official_dates_have_eleven_observations_per_lake():
@@ -12,12 +12,24 @@ def test_official_dates_have_eleven_observations_per_lake():
     }
 
 
-def test_each_lake_has_one_provisional_polygon():
+def test_each_lake_has_one_water_polygon():
     for lake in ("atitlan", "amatitlan"):
         geometry = load_lake_geometry(lake)
         assert geometry["type"] == "FeatureCollection"
         assert len(geometry["features"]) == 1
         assert geometry["features"][0]["geometry"]["type"] in {"Polygon", "MultiPolygon"}
+
+
+def test_course_geojson_matches_the_official_bounding_boxes():
+    for lake, area in AREAS.items():
+        feature = load_course_geometry(lake)["features"][0]
+        coordinates = feature["geometry"]["coordinates"][0]
+        xs = [point[0] for point in coordinates]
+        ys = [point[1] for point in coordinates]
+        assert min(xs) == area.west
+        assert max(xs) == area.east
+        assert min(ys) == area.south
+        assert max(ys) == area.north
 
 
 def test_normalized_differences_and_zero_denominator():

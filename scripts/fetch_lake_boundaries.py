@@ -55,7 +55,7 @@ if {feature["properties"]["id"] for feature in features} != set(RELATIONS.values
 
 collection = {
     "type": "FeatureCollection",
-    "name": "contornos_lagos_osm_provisionales",
+    "name": "contornos_lagos_osm",
     "licence": payload.get("licence"),
     "features": sorted(features, key=lambda feature: feature["properties"]["id"]),
 }

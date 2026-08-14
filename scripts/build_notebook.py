@@ -55,7 +55,7 @@ cells = [
 
 Este avance cubre las bases de los ejercicios 1–4: conexión con Copernicus, definición de las áreas y fechas oficiales, selección mínima de bandas, construcción de índices y preparación del análisis temporal. No se interpretan resultados inexistentes: las conclusiones se completarán únicamente después de validar las descargas.
 
-<div class="callout"><strong>Delimitación de los lagos.</strong> La guía permite usar «las coordenadas o el geojson provisto». La consulta a Copernicus se limita con las cajas envolventes publicadas en la guía y el recorte fino del espejo de agua se hace con los contornos de OpenStreetMap (relaciones 5781818 y 11018382, licencia ODbL), una fuente pública y reproducible. Sobre ese recorte se aplica una máscara dinámica que conserva píxeles sin nube con NDWI ≥ 0.</div>
+<div class="callout"><strong>Delimitación de los lagos.</strong> Los GeoJSON entregados por el curso reproducen las cajas rectangulares de la guía y limitan la consulta a Copernicus. Como no delinean la orilla, el recorte fino se hace con contornos de OpenStreetMap (relaciones 5781818 y 11018382, licencia ODbL). Sobre el espejo de agua se aplica el criterio Se2WaQ que conserva píxeles sin nube con NDWI ≥ 0.</div>
 """),
     code(r"""
 from pathlib import Path
@@ -149,7 +149,7 @@ errores
     md(r"""
 <div class="lab-section"><h2>5. Control de calidad</h2><p>Una ausencia no se convierte en un cero.</p></div>
 
-Se excluyen SCL 0, 1, 3, 8, 9, 10 y 11: sin datos, píxeles saturados, sombra de nube, nubes de probabilidad media/alta, cirros y nieve. Después se conserva agua provisional con NDWI ≥ 0 y se exigen reflectancias positivas en las cuatro bandas. Los valores excluidos permanecen como **NoData**, evitando índices fuera de su dominio y promedios sesgados hacia cero.
+Se excluyen SCL 0, 1, 3, 8, 9, 10 y 11: sin datos, píxeles saturados, sombra de nube, nubes de probabilidad media/alta, cirros y nieve. Después se reproduce la separación agua-fondo de Se2WaQ con NDWI ≥ 0 y se exigen reflectancias positivas en las cuatro bandas. Los valores excluidos permanecen como **NoData**, evitando índices fuera de su dominio y promedios sesgados hacia cero.
 
 La fecha 2026‑02‑07 de Amatitlán se analizará con cautela porque la guía reporta solo 57.1 % de cobertura válida.
 """),
@@ -193,7 +193,9 @@ stats = pd.concat(summaries, ignore_index=True) if summaries else pd.DataFrame()
 if stats.empty:
     display(HTML("<div class='callout'>La tabla temporal se generará cuando existan activos descargados.</div>"))
 else:
-    stats.to_csv(TABLES_DIR / "estadisticas_indices.csv", index=False)
+    stats.to_csv(
+        TABLES_DIR / "estadisticas_indices.csv", index=False, lineterminator="\n"
+    )
     display(stats.head().style.hide(axis="index"))
 """),
     code(r"""

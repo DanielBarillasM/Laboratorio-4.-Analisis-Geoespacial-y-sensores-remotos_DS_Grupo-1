@@ -165,12 +165,18 @@ def main() -> None:
 
     audit = audit_rasters(paths)
     stats = temporal_stats(paths)
-    audit.to_csv(TABLES_DIR / "control_calidad_rasters.csv", index=False)
-    stats.to_csv(TABLES_DIR / "estadisticas_indices.csv", index=False)
+    audit.to_csv(
+        TABLES_DIR / "control_calidad_rasters.csv", index=False, lineterminator="\n"
+    )
+    stats.to_csv(
+        TABLES_DIR / "estadisticas_indices.csv", index=False, lineterminator="\n"
+    )
 
     cya = stats.query("indice == 'CYA'").copy()
     cya["fecha"] = pd.to_datetime(cya["fecha"])
-    cya.to_csv(TABLES_DIR / "serie_temporal_cya.csv", index=False)
+    cya.to_csv(
+        TABLES_DIR / "serie_temporal_cya.csv", index=False, lineterminator="\n"
+    )
     plot_temporal(cya)
     plot_selected_maps(paths)
 

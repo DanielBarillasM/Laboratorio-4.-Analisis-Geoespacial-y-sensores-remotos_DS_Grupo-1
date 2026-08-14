@@ -1,0 +1,23 @@
+lago,fecha,cobertura_poligono_pct,apta_mapa_representativo,observacion_visual
+amatitlan,2025-01-28,93.33958296987713,True,Sin incidencia dominante en el atlas de control.
+amatitlan,2025-04-15,96.63291889314186,True,Sin incidencia dominante en el atlas de control.
+amatitlan,2025-04-28,93.40880425848253,True,Sin incidencia dominante en el atlas de control.
+amatitlan,2025-11-24,92.01905377186638,True,Sin incidencia dominante en el atlas de control.
+amatitlan,2026-01-08,88.94935585794218,True,Sin incidencia dominante en el atlas de control.
+amatitlan,2026-02-02,88.82422506700165,True,Sin incidencia dominante en el atlas de control.
+amatitlan,2026-02-07,89.08247372064488,True,Sin incidencia dominante en el atlas de control.
+amatitlan,2026-03-29,95.25115547828787,True,Sin incidencia dominante en el atlas de control.
+amatitlan,2026-04-13,97.52747093050398,True,Sin incidencia dominante en el atlas de control.
+amatitlan,2026-04-28,77.6769352442778,False,Cobertura válida inferior a 80 %.
+amatitlan,2026-06-19,91.80606519154206,True,Sin incidencia dominante en el atlas de control.
+atitlan,2025-01-18,43.205321515353134,False,Cobertura válida de 43.21 %; patrón espacial incompleto.
+atitlan,2025-04-13,98.37724652496182,True,Sin incidencia dominante en el atlas de control.
+atitlan,2025-05-13,98.28518585904075,True,Sin incidencia dominante en el atlas de control.
+atitlan,2025-07-17,96.1674697739854,False,Discontinuidad rectangular compatible con límite de tesela; no interpretar el parche occidental como estructura natural.
+atitlan,2025-11-21,80.97617682152604,True,Sin incidencia dominante en el atlas de control.
+atitlan,2025-12-29,90.7532120036659,True,Sin incidencia dominante en el atlas de control.
+atitlan,2026-02-12,77.08268426769357,False,Cobertura válida inferior a 80 %.
+atitlan,2026-03-24,97.98494619596717,True,Sin incidencia dominante en el atlas de control.
+atitlan,2026-04-13,97.87556401102263,True,Sin incidencia dominante en el atlas de control.
+atitlan,2026-04-28,98.25727896728071,True,Sin incidencia dominante en el atlas de control.
+atitlan,2026-07-22,96.73426836869804,True,Sin incidencia dominante en el atlas de control.

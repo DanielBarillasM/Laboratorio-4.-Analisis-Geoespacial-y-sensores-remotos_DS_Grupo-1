@@ -1,6 +1,6 @@
 {
   "type": "FeatureCollection",
-  "name": "contornos_lagos_osm_provisionales",
+  "name": "contornos_lagos_osm",
   "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
   "features": [
     {

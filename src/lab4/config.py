@@ -58,6 +58,11 @@ AREAS = {
     ),
 }
 
+COURSE_GEOJSON_FILES = {
+    "atitlan": CONFIG_DIR / "Lago_Atitlan.geojson",
+    "amatitlan": CONFIG_DIR / "Lago_Amatitlan.geojson",
+}
+
 
 def load_observations() -> pd.DataFrame:
     """Carga las 22 observaciones oficiales y valida su estructura mínima."""
@@ -74,7 +79,7 @@ def load_observations() -> pd.DataFrame:
 
 
 def load_lake_geometry(lake: str) -> dict:
-    """Devuelve un FeatureCollection de un lago para `filter_spatial` de openEO."""
+    """Devuelve el contorno fino del espejo de agua usado para el recorte."""
 
     if lake not in AREAS:
         raise KeyError(f"Lago desconocido: {lake}. Opciones: {sorted(AREAS)}")
@@ -87,6 +92,26 @@ def load_lake_geometry(lake: str) -> dict:
     features = [f for f in collection["features"] if f["properties"].get("id") == lake]
     if len(features) != 1:
         raise ValueError(f"Se esperaba un contorno para {lake}; se encontraron {len(features)}")
+    return {"type": "FeatureCollection", "features": features}
+
+
+def load_course_geometry(lake: str) -> dict:
+    """Carga el GeoJSON entregado por el curso para delimitar la consulta.
+
+    Los dos archivos contienen las cajas rectangulares publicadas también como
+    coordenadas en la guía. Se conservan sin simplificar para documentar y usar
+    explícitamente el material proporcionado por el curso.
+    """
+
+    if lake not in COURSE_GEOJSON_FILES:
+        raise KeyError(f"Lago desconocido: {lake}. Opciones: {sorted(AREAS)}")
+    path = COURSE_GEOJSON_FILES[lake]
+    if not path.exists():
+        raise FileNotFoundError(f"No existe el GeoJSON del curso: {path}")
+    collection = json.loads(path.read_text(encoding="utf-8-sig"))
+    features = collection.get("features", [])
+    if len(features) != 1:
+        raise ValueError(f"Se esperaba una geometría en {path}; se encontraron {len(features)}")
     return {"type": "FeatureCollection", "features": features}
 
 

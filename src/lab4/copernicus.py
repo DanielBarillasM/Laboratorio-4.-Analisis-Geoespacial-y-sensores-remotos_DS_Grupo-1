@@ -9,7 +9,7 @@ import openeo
 from openeo.rest.connection import Connection
 from openeo.rest.datacube import DataCube
 
-from .config import AREAS, StudyArea, load_lake_geometry
+from .config import AREAS, StudyArea, load_course_geometry, load_lake_geometry
 
 
 OPENEO_URL = "https://openeo.dataspace.copernicus.eu"
@@ -70,7 +70,7 @@ def build_daily_indices_cube(
 ) -> DataCube:
     """Construye NDVI, NDWI y CYA para una fecha sin descargar bandas crudas.
 
-    La máscara de agua provisional reproduce la decisión de Se2WaQ: NDWI >= 0.
+    La separación agua-fondo reproduce la decisión de Se2WaQ: NDWI >= 0.
     También excluye clases SCL inválidas/nubosas y reflectancia azul no positiva.
     """
 
@@ -81,7 +81,9 @@ def build_daily_indices_cube(
         temporal_extent=temporal_extent,
         bands=[*SPECTRAL_BANDS, "SCL"],
         max_cloud_cover=100,
-    ).filter_spatial(load_lake_geometry(area.key)).resample_spatial(
+    ).filter_spatial(load_course_geometry(area.key)).filter_spatial(
+        load_lake_geometry(area.key)
+    ).resample_spatial(
         resolution=resolution, method="near"
     )
 
@@ -95,6 +97,9 @@ def build_daily_indices_cube(
     cya_values = 115_530.31 * (((green * red) / blue) ** 2.38)
 
     nonpositive_reflectance = (blue <= 0) | (green <= 0) | (red <= 0) | (nir <= 0)
+    # Se2WaQ usa NDWI < 0 para separar el fondo terrestre. Se conserva este
+    # criterio para reproducir el script solicitado; el informe documenta que
+    # una nata superficial ópticamente similar a vegetación podría excluirse.
     invalid = _invalid_scl_mask(data) | nonpositive_reflectance | (ndwi_values < 0)
     ndvi_cube = ndvi_values.mask(invalid).add_dimension("bands", "NDVI", type="bands")
     ndwi_cube = ndwi_values.mask(invalid).add_dimension("bands", "NDWI", type="bands")

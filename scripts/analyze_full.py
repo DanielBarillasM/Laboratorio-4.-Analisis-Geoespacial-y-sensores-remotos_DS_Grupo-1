@@ -62,6 +62,22 @@ CYA_UNIT = "CYA (10³ células/ml)"
 # y cubre una décima parte del lago. Es un corte declarado, no un límite sanitario.
 CRITICAL_AREA_PCT = 10.0
 
+# Un píxel debe haberse observado en al menos la mitad de las once fechas para
+# llamarlo persistente. Así una única observación despejada no produce 100 %.
+MIN_PERSISTENCE_OBSERVATIONS = 6
+
+# Fechas que no deben elegirse para mapas representativos. Permanecen en las
+# series y tablas, acompañadas por una observación de calidad explícita.
+VISUAL_QUALITY_NOTES = {
+    ("amatitlan", "2026-04-28"): "Cobertura válida inferior a 80 %.",
+    ("atitlan", "2025-01-18"): "Cobertura válida de 43.21 %; patrón espacial incompleto.",
+    ("atitlan", "2025-07-17"): (
+        "Discontinuidad rectangular compatible con límite de tesela; no interpretar "
+        "el parche occidental como estructura natural."
+    ),
+    ("atitlan", "2026-02-12"): "Cobertura válida inferior a 80 %.",
+}
+
 
 def date_from_name(path: Path) -> str:
     match = re.search(r"20\d{2}-\d{2}-\d{2}", path.name)
@@ -128,6 +144,19 @@ def audit_rasters(
                 fila[f"{nombre.lower()}_max"] = float(finitos.max()) if finitos.size else np.nan
             filas.append(fila)
     return pd.DataFrame(filas).sort_values(["lago", "fecha"]).reset_index(drop=True)
+
+
+def visual_quality_table(control_calidad: pd.DataFrame) -> pd.DataFrame:
+    """Registra la revisión visual de las 22 fechas sin borrar observaciones."""
+
+    tabla = control_calidad[["lago", "fecha", "cobertura_poligono_pct"]].copy()
+    claves = list(zip(tabla["lago"], tabla["fecha"]))
+    tabla["apta_mapa_representativo"] = [clave not in VISUAL_QUALITY_NOTES for clave in claves]
+    tabla["observacion_visual"] = [
+        VISUAL_QUALITY_NOTES.get(clave, "Sin incidencia dominante en el atlas de control.")
+        for clave in claves
+    ]
+    return tabla
 
 
 def build_statistics(
@@ -230,7 +259,11 @@ def persistence_table(
     filas, mapas = [], {}
     for lago, entradas in por_lago.items():
         fechas, cubos, profile = stack_lake_rasters(entradas)
-        fraccion, n_valid = persistence_fraction(cubos["CYA"], CYANO_HIGH_THRESHOLD)
+        fraccion, n_valid = persistence_fraction(
+            cubos["CYA"],
+            CYANO_HIGH_THRESHOLD,
+            min_observations=MIN_PERSISTENCE_OBSERVATIONS,
+        )
         mapas[lago] = (fraccion, n_valid, profile)
         pixel_area = abs(profile["transform"].a * profile["transform"].e)
         observados = np.isfinite(fraccion)
@@ -239,12 +272,69 @@ def persistence_table(
             filas.append({
                 "lago": lago,
                 "fechas_apiladas": len(fechas),
+                "min_observaciones_validas": MIN_PERSISTENCE_OBSERVATIONS,
                 "corte_persistencia": corte,
                 "pixeles": encima,
                 "area_km2": encima * pixel_area / 1e6,
                 "porcentaje_area_lago": 100 * encima * pixel_area / areas[lago],
             })
     return pd.DataFrame(filas), mapas
+
+
+def spatial_zone_tables(
+    por_lago: dict[str, list[tuple[str, Path]]],
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Resume CYA por cuadrantes para sustentar la interpretación espacial.
+
+    Los cuadrantes se definen respecto del centro de la rejilla de cada lago. No
+    sustituyen una zonificación hidrológica; sirven como referencia reproducible
+    para describir norte/sur y este/oeste sin depender solo de la vista del mapa.
+    """
+
+    filas = []
+    for lago, entradas in por_lago.items():
+        for fecha, path in entradas:
+            arrays, profile = read_index_raster(path)
+            valores = arrays["CYA"]
+            alto, ancho = valores.shape
+            transform = profile["transform"]
+            columnas = np.arange(ancho)
+            renglones = np.arange(alto)
+            xs = transform.c + (columnas + 0.5) * transform.a
+            ys = transform.f + (renglones + 0.5) * transform.e
+            centro_x = (xs.min() + xs.max()) / 2
+            centro_y = (ys.min() + ys.max()) / 2
+            oeste = xs < centro_x
+            norte = ys >= centro_y
+            zonas = {
+                "noroeste": norte[:, None] & oeste[None, :],
+                "noreste": norte[:, None] & ~oeste[None, :],
+                "suroeste": ~norte[:, None] & oeste[None, :],
+                "sureste": ~norte[:, None] & ~oeste[None, :],
+            }
+            for zona, mascara in zonas.items():
+                muestra = valores[mascara & np.isfinite(valores)]
+                filas.append({
+                    "lago": lago,
+                    "fecha": fecha,
+                    "zona": zona,
+                    "n_pixeles_validos": int(muestra.size),
+                    "mediana_cya": float(np.median(muestra)) if muestra.size else np.nan,
+                    "p90_cya": float(np.percentile(muestra, 90)) if muestra.size else np.nan,
+                    "porcentaje_alto": (
+                        float(100 * np.mean(muestra >= CYANO_HIGH_THRESHOLD))
+                        if muestra.size else np.nan
+                    ),
+                })
+    por_fecha = pd.DataFrame(filas).sort_values(["lago", "fecha", "zona"])
+    resumen = por_fecha.groupby(["lago", "zona"]).agg(
+        fechas=("fecha", "size"),
+        mediana_cya_tipica=("mediana_cya", "median"),
+        p90_cya_tipico=("p90_cya", "median"),
+        porcentaje_alto_mediano=("porcentaje_alto", "median"),
+        porcentaje_alto_maximo=("porcentaje_alto", "max"),
+    ).reset_index()
+    return por_fecha, resumen
 
 
 # --------------------------------------------------------------------------- #
@@ -380,6 +470,34 @@ def plot_persistence(mapas: dict[str, tuple[np.ndarray, np.ndarray, dict]]) -> N
     save(fig, "persistencia_cya")
 
 
+def plot_all_dates(por_lago: dict[str, list[tuple[str, Path]]]) -> None:
+    """Atlas de control visual con las once fechas oficiales de cada lago."""
+
+    for lago, entradas in por_lago.items():
+        fig, axes = plt.subplots(3, 4, figsize=(15, 11), constrained_layout=True)
+        imagen = None
+        for ax, (fecha, path) in zip(axes.flat, entradas):
+            arrays, profile = read_index_raster(path)
+            imagen = ax.imshow(
+                np.clip(arrays["CYA"], 0, CYANO_DISPLAY_MAX),
+                cmap="turbo", vmin=0, vmax=CYANO_DISPLAY_MAX,
+                extent=raster_extent(profile),
+            )
+            lake_outline(profile["crs"], lago).boundary.plot(
+                ax=ax, edgecolor="#19313b", linewidth=.55, zorder=5
+            )
+            ax.set_title(fecha, fontsize=9, fontweight="bold")
+            ax.set_xticks([])
+            ax.set_yticks([])
+        for ax in axes.flat[len(entradas):]:
+            ax.axis("off")
+        fig.colorbar(imagen, ax=axes, shrink=.72, extend="max", label=f"{CYA_UNIT}, escala 0–100")
+        fig.suptitle(
+            f"Atlas temporal de CYA · {LABELS[lago]}", fontsize=16, fontweight="bold"
+        )
+        save(fig, f"atlas_cya_{lago}")
+
+
 def plot_distributions(por_lago: dict[str, list[tuple[str, Path]]]) -> None:
     """Cajas por fecha en escala logarítmica (ejercicio 8.3)."""
 
@@ -512,7 +630,10 @@ def choose_dates(cya: pd.DataFrame, lago: str, cuantas: int = 3) -> list[str]:
     deje de tener sentido cuando cambien las estadísticas.
     """
 
-    grupo = cya[cya["lago"] == lago].sort_values("porcentaje_area_alto")
+    excluidas = {fecha for (nombre, fecha) in VISUAL_QUALITY_NOTES if nombre == lago}
+    grupo = cya[(cya["lago"] == lago) & ~cya["fecha"].isin(excluidas)].sort_values(
+        "porcentaje_area_alto"
+    )
     if len(grupo) <= cuantas:
         return sorted(grupo["fecha"])
     indices = [0, len(grupo) // 2, len(grupo) - 1][:cuantas]
@@ -559,6 +680,7 @@ def main() -> int:
     areas = lake_areas(primer_perfil["crs"])
 
     control_calidad = audit_rasters(por_lago, areas)
+    revision_visual = visual_quality_table(control_calidad)
     estadisticas, sensibilidad = build_statistics(por_lago, areas)
     cya = estadisticas.query("indice == 'CYA'").reset_index(drop=True)
     correlaciones = build_correlations(por_lago)
@@ -566,9 +688,11 @@ def main() -> int:
     comparacion = compare_lakes(cya)
     estacional = seasonal_table(cya)
     persistencia, mapas_persistencia = persistence_table(por_lago, areas)
+    zonas_fecha, zonas_resumen = spatial_zone_tables(por_lago)
 
     for nombre, tabla in {
         "control_calidad_rasters": control_calidad,
+        "revision_visual_rasters": revision_visual,
         "estadisticas_indices": estadisticas,
         "serie_temporal_cya": cya,
         "sensibilidad_umbral_cya": sensibilidad,
@@ -577,8 +701,10 @@ def main() -> int:
         "comparacion_lagos": comparacion,
         "distribucion_estacional": estacional,
         "persistencia_resumen": persistencia,
+        "zonas_espaciales_fecha": zonas_fecha,
+        "zonas_espaciales_resumen": zonas_resumen,
     }.items():
-        tabla.to_csv(TABLES_DIR / f"{nombre}.csv", index=False)
+        tabla.to_csv(TABLES_DIR / f"{nombre}.csv", index=False, lineterminator="\n")
 
     seleccion = {lago: choose_dates(cya, lago) for lago in por_lago}
     comparaciones = {
@@ -591,6 +717,7 @@ def main() -> int:
     if comparaciones:
         plot_difference_maps(por_lago, comparaciones)
     plot_persistence(mapas_persistencia)
+    plot_all_dates(por_lago)
     plot_distributions(por_lago)
     plot_correlation_scatter(por_lago, seleccion)
     plot_lake_comparison(comparacion, cya)

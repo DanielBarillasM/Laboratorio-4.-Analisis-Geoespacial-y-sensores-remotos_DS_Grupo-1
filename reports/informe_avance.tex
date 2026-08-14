@@ -57,7 +57,7 @@ Amatitlán & 11 & 20 m & La fecha 07-02-2026 tiene cerca de 57.1\% de cobertura 
 \end{tabularx}
 \end{table}
 
-Las cajas envolventes indicadas en la guía se utilizan para limitar la consulta. Para excluir el terreno circundante se incorporaron provisionalmente los contornos de las relaciones 5781818 y 11018382 de OpenStreetMap. Antes de calcular superficies definitivas deberán sustituirse por los polígonos GeoJSON oficiales mencionados por el curso.
+Los GeoJSON entregados por el curso reproducen las cajas envolventes indicadas en la guía y se utilizan para limitar la consulta. Como son rectángulos y no siguen la orilla, para excluir el terreno circundante se incorporaron los contornos de las relaciones 5781818 y 11018382 de OpenStreetMap. Los primeros documentan la extensión oficial de búsqueda; los segundos permiten recortar el espejo de agua y calcular superficies.
 
 \section{Procesamiento propuesto}
 
@@ -79,7 +79,7 @@ Cada imagen será inspeccionada visualmente. También se calculará el número d
 
 \section{Resultados temporales preliminares}
 
-Se descargaron y auditaron las 22 observaciones oficiales: once por lago, todas con tres bandas derivadas, proyección UTM 15N y resolución de 20 m. Los índices normalizados permanecieron en sus intervalos esperados. La cobertura válida estimada sobre el polígono provisional varió entre 77.7\% y 97.5\% en Amatitlán, y entre 43.2\% y 98.4\% en Atitlán. La imagen de Atitlán del 18 de enero de 2025 requiere especial cautela por su cobertura parcial.
+Se descargaron y auditaron las 22 observaciones oficiales: once por lago, todas con tres bandas derivadas, proyección UTM 15N y resolución de 20 m. Los índices normalizados permanecieron en sus intervalos esperados. La cobertura válida estimada sobre el contorno del espejo de agua varió entre 77.7\% y 97.5\% en Amatitlán, y entre 43.2\% y 98.4\% en Atitlán. La imagen de Atitlán del 18 de enero de 2025 requiere especial cautela por su cobertura parcial.
 
 La fórmula Se2WaQ puede producir valores extremos cuando la reflectancia azul es muy pequeña. Por ello, el ráster crudo se conserva para trazabilidad, pero las medias comparativas se calcularon sobre la escala publicada de 0 a 100. Esta decisión evita que pocos píxeles inestables oculten el patrón general y deberá someterse a un análisis de sensibilidad.
 
@@ -95,7 +95,7 @@ Amatitlán presenta señales altas y extendidas en abril de 2025 y nuevamente en
 
 \section{Estado del avance y trabajo pendiente}
 
-Se completaron la estructura versionable, las 22 descargas, el control de calidad inicial, las estadísticas temporales y mapas comparativos preliminares. Falta sustituir los contornos por los oficiales del curso, revisar manualmente todas las fechas, efectuar correlaciones, análisis de persistencia y comparación ambiental, y validar la robustez del modelo ante valores extremos.
+Se completaron la estructura versionable, las 22 descargas, el control de calidad inicial, las estadísticas temporales y mapas comparativos preliminares. Falta revisar manualmente todas las fechas, efectuar correlaciones, análisis de persistencia y comparación ambiental, y validar la robustez del modelo ante valores extremos.
 
 \begin{thebibliography}{9}
 \bibitem{potes2018}
