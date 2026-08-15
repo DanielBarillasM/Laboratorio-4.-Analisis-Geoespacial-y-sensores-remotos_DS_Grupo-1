@@ -58,9 +58,12 @@ def ndwi(green: np.ndarray, nir: np.ndarray) -> np.ndarray:
 def cyano_se2waq(blue: np.ndarray, green: np.ndarray, red: np.ndarray) -> np.ndarray:
     """Proxy Se2WaQ de cianobacteria en 10^3 células/ml usando reflectancia 0--1.
 
-    Fórmula de Potes et al. (2018), publicada en el script Se2WaQ de Sentinel Hub.
-    Fuente oficial verificada:
+    Fórmula de Potes et al. (2018), publicada en el script Se2WaQ de Sentinel Hub:
+    ``115530.31 * ((B03 * B04) / B02) ** 2.38``. Se verificó, término a término,
+    contra el evalscript oficial publicado en
     https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/se2waq/
+    (fuente también citada en ``README.md``); la correspondencia numérica se
+    cubre además con una prueba automática (``tests/test_estadisticos.py``).
     Se marca como inválido todo píxel cuya reflectancia azul sea no positiva.
     """
 
