@@ -70,6 +70,8 @@ def build_daily_indices_cube(
 ) -> DataCube:
     """Construye NDVI, NDWI y CYA para una fecha sin descargar bandas crudas.
 
+    CYA reproduce la ecuación del evalscript oficial de Se2WaQ:
+    https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/se2waq/
     La separación agua-fondo reproduce la decisión de Se2WaQ: NDWI >= 0.
     También excluye clases SCL inválidas/nubosas y reflectancia azul no positiva.
     """

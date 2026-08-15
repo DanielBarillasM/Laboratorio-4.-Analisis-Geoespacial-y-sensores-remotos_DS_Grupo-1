@@ -33,10 +33,14 @@ tests/        validación de fórmulas, estadísticos y configuración
 Desde la raíz del repositorio:
 
 ```powershell
-python -m pip install -e ".[test]"
+python -m pip install -r requirements.txt
 python -m pytest -q
 python scripts/fetch_lake_boundaries.py
 ```
+
+La instalación anterior es compatible con `pip`; las dependencias canónicas
+están declaradas en `pyproject.toml` y bloqueadas en `uv.lock`. Quien utilice
+`uv` puede ejecutar `uv sync --extra test`.
 
 Con los GeoTIFF ya descargados, un solo comando reconstruye todas las tablas y
 figuras de los ejercicios 4 a 8:
@@ -69,6 +73,14 @@ python scripts/download_cdse.py --lake all --submit
 ```
 
 El programa muestra un código y una dirección oficial de CDSE para autorizar la sesión. No solicita, imprime ni guarda la contraseña. Los trabajos y GeoTIFF se almacenan bajo `data/`, una ruta excluida de Git.
+
+### Disponibilidad de los datos ráster
+
+Los 22 GeoTIFF no se incluyen en GitHub ni en el ZIP porque son productos
+derivados reproducibles y aumentarían innecesariamente el tamaño de la entrega.
+Las fechas, geometrías, scripts, tablas, figuras y resultados finales sí están
+versionados. [`data/README.md`](data/README.md) documenta la estructura esperada
+y los comandos exactos para volver a descargar y reconstruir el análisis.
 
 ## Productos
 
@@ -117,9 +129,9 @@ Conviene leerlas antes de citar cualquier cifra.
 - **La media truncada no resume la intensidad.** La rampa publicada de Se2WaQ
   termina en 100, pero en varias fechas de Amatitlán más de la mitad del espejo de
   agua la supera. Truncar convierte la media en un contador de saturación. Por eso
-  la serie temporal usa mediana y percentiles sobre el valor crudo, y la media
-  truncada se conserva como lectura complementaria junto a
-  `porcentaje_saturado_100`.
+  la serie temporal muestra la media aritmética exigida por la guía junto con la
+  mediana y percentiles sobre el valor crudo; la media truncada se conserva como
+  lectura complementaria junto a `porcentaje_saturado_100`.
 - **El umbral de CYA alta es 40** porque es uno de los cortes de la rampa
   publicada, `scaleCya = [0, 10, 20, 40, 50, 100]`, no un límite sanitario. Todo se
   acompaña de sensibilidad con 20, 40 y 60.
