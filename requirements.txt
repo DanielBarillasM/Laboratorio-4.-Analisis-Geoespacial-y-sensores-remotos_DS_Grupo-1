@@ -1,3 +1,5 @@
-# Compatibilidad con flujos tradicionales de pip.
-# La definición canónica y versionada de dependencias está en pyproject.toml y uv.lock.
+# Archivo de compatibilidad para `pip install -r requirements.txt`.
+# La fuente de verdad de las dependencias es pyproject.toml (+ uv.lock para
+# versiones exactas). Esta línea instala el paquete del laboratorio en modo
+# editable junto con las dependencias de prueba, sin duplicar la lista.
 -e .[test]

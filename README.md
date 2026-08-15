@@ -33,14 +33,10 @@ tests/        validación de fórmulas, estadísticos y configuración
 Desde la raíz del repositorio:
 
 ```powershell
-python -m pip install -r requirements.txt
+python -m pip install -e ".[test]"
 python -m pytest -q
 python scripts/fetch_lake_boundaries.py
 ```
-
-La instalación anterior es compatible con `pip`; las dependencias canónicas
-están declaradas en `pyproject.toml` y bloqueadas en `uv.lock`. Quien utilice
-`uv` puede ejecutar `uv sync --extra test`.
 
 Con los GeoTIFF ya descargados, un solo comando reconstruye todas las tablas y
 figuras de los ejercicios 4 a 8:
@@ -73,14 +69,6 @@ python scripts/download_cdse.py --lake all --submit
 ```
 
 El programa muestra un código y una dirección oficial de CDSE para autorizar la sesión. No solicita, imprime ni guarda la contraseña. Los trabajos y GeoTIFF se almacenan bajo `data/`, una ruta excluida de Git.
-
-### Disponibilidad de los datos ráster
-
-Los 22 GeoTIFF no se incluyen en GitHub ni en el ZIP porque son productos
-derivados reproducibles y aumentarían innecesariamente el tamaño de la entrega.
-Las fechas, geometrías, scripts, tablas, figuras y resultados finales sí están
-versionados. [`data/README.md`](data/README.md) documenta la estructura esperada
-y los comandos exactos para volver a descargar y reconstruir el análisis.
 
 ## Productos
 
@@ -126,12 +114,16 @@ atlas de las 11 fechas de cada lago (`atlas_cya_*`) y los mapas interactivos
 
 Conviene leerlas antes de citar cualquier cifra.
 
-- **La media truncada no resume la intensidad.** La rampa publicada de Se2WaQ
-  termina en 100, pero en varias fechas de Amatitlán más de la mitad del espejo de
-  agua la supera. Truncar convierte la media en un contador de saturación. Por eso
-  la serie temporal muestra la media aritmética exigida por la guía junto con la
-  mediana y percentiles sobre el valor crudo; la media truncada se conserva como
-  lectura complementaria junto a `porcentaje_saturado_100`.
+- **La media aritmética por sí sola no resume la intensidad.** La rampa publicada
+  de Se2WaQ termina en 100, pero en varias fechas de Amatitlán más de la mitad
+  del espejo de agua la supera, así que un promedio simple actúa casi como un
+  contador de saturación. Por eso `serie_temporal_cya.csv` reporta, para cada
+  fecha y lago: la **media aritmética** sobre el valor crudo (la medida central
+  exigida por el ejercicio 4.1 del PDF), la **mediana** y el **percentil 90**
+  como lecturas robustas frente a la cola alta, y el **porcentaje del área con
+  CYA alta** (`porcentaje_saturado_100` y las variantes de
+  `sensibilidad_umbral_cya.csv`) como medida de extensión de la floración. La
+  media truncada se conserva aparte, como lectura complementaria.
 - **El umbral de CYA alta es 40** porque es uno de los cortes de la rampa
   publicada, `scaleCya = [0, 10, 20, 40, 50, 100]`, no un límite sanitario. Todo se
   acompaña de sensibilidad con 20, 40 y 60.
