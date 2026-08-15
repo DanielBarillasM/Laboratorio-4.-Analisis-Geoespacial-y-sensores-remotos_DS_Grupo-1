@@ -1,4 +1,12 @@
-"""Construcción de cubos openEO para Copernicus Data Space Ecosystem."""
+"""Construcción de cubos openEO para Copernicus Data Space Ecosystem.
+
+Colección: Sentinel-2 L2A. El proxy de cianobacteria (CYA) se calcula con la
+fórmula del script oficial Se2WaQ de Sentinel Hub —
+https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/se2waq/ —
+implementada en ``lab4.analysis.cyano_se2waq``. Las bandas B02/B03/B04 se
+convierten a reflectancia (``REFLECTANCE_SCALE``) antes de aplicarla, tal como
+exige el evalscript original.
+"""
 
 from __future__ import annotations
 
@@ -70,8 +78,6 @@ def build_daily_indices_cube(
 ) -> DataCube:
     """Construye NDVI, NDWI y CYA para una fecha sin descargar bandas crudas.
 
-    CYA reproduce la ecuación del evalscript oficial de Se2WaQ:
-    https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-2/se2waq/
     La separación agua-fondo reproduce la decisión de Se2WaQ: NDWI >= 0.
     También excluye clases SCL inválidas/nubosas y reflectancia azul no positiva.
     """
@@ -99,9 +105,6 @@ def build_daily_indices_cube(
     cya_values = 115_530.31 * (((green * red) / blue) ** 2.38)
 
     nonpositive_reflectance = (blue <= 0) | (green <= 0) | (red <= 0) | (nir <= 0)
-    # Se2WaQ usa NDWI < 0 para separar el fondo terrestre. Se conserva este
-    # criterio para reproducir el script solicitado; el informe documenta que
-    # una nata superficial ópticamente similar a vegetación podría excluirse.
     invalid = _invalid_scl_mask(data) | nonpositive_reflectance | (ndwi_values < 0)
     ndvi_cube = ndvi_values.mask(invalid).add_dimension("bands", "NDVI", type="bands")
     ndwi_cube = ndwi_values.mask(invalid).add_dimension("bands", "NDWI", type="bands")
@@ -128,8 +131,5 @@ def build_lake_timeseries_cube(
         raise ValueError("La lista de fechas está vacía")
     merged = cubes[0]
     for cube in cubes[1:]:
-        # El backend exige un resolvedor para cubos con las mismas bandas.
-        # Las ventanas oficiales son disjuntas, así que normalmente no se usa;
-        # `max` también hace determinista cualquier solapamiento excepcional.
         merged = merged.merge_cubes(cube, overlap_resolver="max")
     return merged
